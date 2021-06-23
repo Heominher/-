@@ -1,0 +1,64 @@
+1. pom.xml에 타일즈 선언하기
+
+<dependency>
+  <groupId>org.apache.tiles</groupId>
+  <artifactId>tiles-jsp</artifactId>
+  <version>3.0.7</version>
+</dependency>
+
+2. 타일즈 설정 파일 넣기
+tiles.xml
+
+====================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+<!--        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" -->
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+   <!-- main -->
+   <definition name="main-layout" template="/WEB-INF/jsp/Commonlayout/base_main.jsp">
+       <put-attribute name="topMenu" value="/WEB-INF/jsp/Commonlayout/topMenu.jsp" />
+       <put-attribute name="body" value="" />
+       <put-attribute name="hadanPage" value="/WEB-INF/jsp/Commonlayout/hadanPage.jsp" />
+   </definition>
+   
+   <definition name="login" template="/WEB-INF/jsp/login.jsp"> </definition>
+   <definition name="join" template="/WEB-INF/jsp/join.jsp"> </definition>
+   
+   <definition name="system/*" extends="main-layout">
+       <put-attribute name="body" value="/WEB-INF/jsp/system/{1}.jsp" />
+   </definition>
+====================================================
+
+
+3. base_mian.jsp 만들기!!
+
+
+4. context-servlet.xml 설정 해주기
+====================================================
+<!-- ========== !!!타일즈 설정!!! ======= -->
+	<beans:bean id="tilesConfigurer"
+		class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+		<beans:property name="definitions">
+			<beans:list>
+				<beans:value>classpath*:/spring/context-tiles.xml</beans:value>
+			</beans:list>
+		</beans:property>
+	</beans:bean>
+	
+	<beans:bean id="tilesViewResolver"
+		class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<beans:property name="viewClass"
+			value="org.springframework.web.servlet.view.tiles3.TilesView" />
+		<beans:property name="order" value="1" />
+	</beans:bean>
+	<!-- ========== !!!타일즈 설정!!! =======-->
+====================================================
+
+5. context-servlet.xml 설정 해주기 (jsp기본꺼 2번째로 읽을수 있게 변경)
+<beans:property name="order" value="1" />  (변경) ==> <beans:property name="order" value="2" />
+
+
+그러면 끝~
+
+

@@ -1,0 +1,7 @@
+오라클 DB저장소 만드는법 (로컬 기준)
+
+https://computer-science-student.tistory.com/209 - (oracle XE설치)
+
+https://ngg3319.tistory.com/74 - (로컬 DB계정 만들기!!)
+
+https://jhnyang.tistory.com/272 - (오라클 system설정)
