@@ -1,0 +1,181 @@
+/==================================================
+/=====================함수만드는법====================
+/==================================================
+
+
+
+create or replace FUNCTION         SF_DATE_FMT (
+       P_DATE     VARCHAR2
+     , P_OUT_TYPE VARCHAR2
+) RETURN VARCHAR2 IS
+
+    R_DATE  VARCHAR2(10);
+
+/******************************************************************************
+   NAME:       SF_DATE_FMT
+   PURPOSE:    SPLIT('-')이 없는 8자리 날짜에 하이픈 추가하거나 제거한다.
+
+   REVISIONS:
+   Ver        Date        Author           Description
+   ---------  ----------  ---------------  ------------------------------------
+   1.0        2015-10-19   hgkim           1. Created this function.
+
+   NOTES:
+   param : 1. 날짜
+           2. 출력구분 (add : 포함, del : 제거)
+   out : 날짜
+
+******************************************************************************/
+
+BEGIN
+
+    IF P_OUT_TYPE = 'add' THEN
+        R_DATE := TO_CHAR(TO_DATE(P_DATE, 'YYYYMMDD'), 'YYYY-MM-DD');
+    ELSIF P_OUT_TYPE = 'del' THEN
+        R_DATE := REPLACE(P_DATE, '-', '');
+    ELSE
+        R_DATE := P_DATE;
+    END IF;
+
+    RETURN R_DATE;
+
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create or replace FUNCTION         "SF_CMPY_NM" ( P_CMPY_ID NUMBER ) RETURN VARCHAR2 IS
+
+    R_CMPY_NM  T_CM_DETAIL_CMPY.DETAIL_CMPY_NM%TYPE;
+
+/******************************************************************************
+   NAME:       SF_CMPY_NM
+   PURPOSE:    업체ID에 해당하는 업체명을 조회한다.
+
+   REVISIONS:
+   Ver        Date        Author           Description
+   ---------  ----------  ---------------  ------------------------------------
+   1.0        2015-10-16   hgkim           1. Created this function.
+
+   NOTES:
+   param : 업체ID
+   out : 업체명
+
+******************************************************************************/
+
+BEGIN
+
+    BEGIN
+
+        SELECT --REGEXP_REPLACE(DETAIL_CMPY_NM,'.','*',4)    -- 업체명
+          DETAIL_CMPY_NM
+          INTO R_CMPY_NM
+          FROM T_CM_DETAIL_CMPY  /* 업체정보 테이블 */
+         WHERE DETAIL_CMPY_ID = P_CMPY_ID;
+
+
+        EXCEPTION WHEN OTHERS THEN
+            R_CMPY_NM := '';
+
+    END;
+
+    RETURN R_CMPY_NM;
+
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create or replace FUNCTION         "SF_AGRE_YN" (
+       P_USER_ID  VARCHAR2
+) RETURN VARCHAR2 IS
+    R_STR   VARCHAR2(12) := '';
+BEGIN
+        SELECT 
+            CASE WHEN AA.AGRE = 'N' AND BB.USER_CHECK = 'Y' THEN 'N' ELSE 'Y' END INTO R_STR 
+        FROM 
+            (SELECT 
+            CASE WHEN A = 'Y' AND B = 'Y' AND C = 'Y' THEN 'Y'
+            ELSE 'N' END AGRE FROM(
+            SELECT 
+                MAX(DECODE(JOB_SE_CD, '001', AGRE_YN)) AS A
+                ,MAX(DECODE(JOB_SE_CD, '002', AGRE_YN)) AS B
+                ,MAX(DECODE(JOB_SE_CD, '003', AGRE_YN)) AS C
+                FROM (
+                SELECT A.PBL_ID, A.JOB_SE_CD, B.AGRE_YN FROM (
+                    SELECT PBL_ID, JOB_SE_CD
+                    FROM (
+                            SELECT ROW_NUMBER() OVER(PARTITION BY JOB_SE_CD ORDER BY PBL_ID DESC) RN
+                                ,PBL_ID
+                                ,JOB_SE_CD
+                                ,RE_AGRE_YN
+                            FROM T_CM_INDINFO_PBL WHERE RE_AGRE_YN = 'Y'
+                    )WHERE RN = 1
+                )A
+                ,T_CM_INDINFO_CLS_AGRE B
+                WHERE A.PBL_ID = B.PBL_ID(+)
+                AND B.USER_ID(+) = P_USER_ID
+            )
+        ))AA
+        ,( SELECT 
+                NVL2(AA,'Y','N') USER_CHECK
+            FROM
+                (SELECT MAX(USER_ID) AA FROM
+                    (SELECT USER_ID FROM T_CM_USER
+                    WHERE USER_ID = P_USER_ID
+                )
+            ))BB;
+        RETURN R_STR;
+END;
+
+
