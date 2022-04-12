@@ -1,0 +1,6 @@
+<!-- 시큐리티 토큰 제어 없애기 -->
+<security:csrf disabled="true"/>
+
+
+<!-- log4j 잘띄우기 설정 -->
+https://freehoon.tistory.com/113
